@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
+using System.Security.Claims;
+using IdentityModel;
 
 namespace OAuthServer
 {
@@ -76,6 +79,8 @@ namespace OAuthServer
 
         public void Configure(IApplicationBuilder app)
         {
+            InitializeDatabase(app);
+
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -89,6 +94,40 @@ namespace OAuthServer
             app.UseStaticFiles();
             app.UseIdentityServer();
             app.UseMvcWithDefaultRoute();
+        }
+
+        private void InitializeDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+
+                var userMgr = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var admin = userMgr.FindByNameAsync("admin").Result;
+                if (admin == null)
+                {
+                    admin = new ApplicationUser
+                    {
+                        UserName = "admin"
+                    };
+                    var result = userMgr.CreateAsync(admin, "qqq111").Result;
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception(result.Errors.First().Description);
+                    }
+
+                    result = userMgr.AddClaimsAsync(admin, new Claim[] {
+                        new Claim(JwtClaimTypes.Name, "Administrator"),
+                        new Claim(JwtClaimTypes.Email, "admin@identity.dev"),
+                        new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean)
+                    }).Result;
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception(result.Errors.First().Description);
+                    }
+                }
+            }
         }
     }
 }
