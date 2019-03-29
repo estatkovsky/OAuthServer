@@ -13,6 +13,8 @@ using IdentityModel;
 using System.Reflection;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace OAuthServer
 {
@@ -29,7 +31,8 @@ namespace OAuthServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            string connectionString = Configuration.GetConnectionString("DefaultConnection");
+            string connectionString = Configuration.GetConnectionString("IdentityServer");
+            var settings = Configuration.GetSection("IdentityServer").Get<IdentityServerConfig>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -54,6 +57,7 @@ namespace OAuthServer
                     options.Events.RaiseInformationEvents = true;
                     options.Events.RaiseFailureEvents = true;
                     options.Events.RaiseSuccessEvents = true;
+                    options.IssuerUri = settings.IssuerUri;
                 })
                 .AddConfigurationStore(options =>
                 {
@@ -78,7 +82,10 @@ namespace OAuthServer
             }
             else
             {
-                throw new Exception("need to configure key material");
+                builder.AddSigningCredential(new X509Certificate2(
+                    Path.Combine(Environment.ContentRootPath, settings.CertificatePath),
+                    settings.CertificatePassword,
+                    X509KeyStorageFlags.MachineKeySet));
             }
 
             services.Configure<IdentityOptions>(options =>

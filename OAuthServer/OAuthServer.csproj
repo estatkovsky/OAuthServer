@@ -12,6 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="AppData\IdentityServer4Auth.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AppData\IdentityServer4Auth.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityServer4.EntityFramework" Version="2.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.3" />
