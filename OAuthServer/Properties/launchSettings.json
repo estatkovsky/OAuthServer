@@ -2,6 +2,10 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://identity.bb",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:5000",
       "sslPort": 0
@@ -9,9 +13,9 @@
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "IIS",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5000",
+      "launchUrl": "http://identity.bb",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
